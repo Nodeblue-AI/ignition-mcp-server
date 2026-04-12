@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0] - 2026-04-12
+
+### Added
+- **Cross-platform intelligence** — new [project-automate-bridge](https://github.com/nodeblue-ai/project-automate-bridge) package correlates Ignition OPC tags with Studio 5000 L5X PLC logic end-to-end.
+- **OPC item path support** — `get_tags()` now includes `opcItemPath` and `opcServer` in tag summaries for OPC-sourced tags, enabling cross-platform correlation.
+- 1 new test (72 total in test_server.py, 85 total with test_gateway.py).
+
 ## [0.3.1] - 2026-04-12
 
 ### Fixed

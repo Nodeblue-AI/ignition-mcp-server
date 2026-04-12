@@ -97,7 +97,7 @@ def _summarize_tags(tags: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if entry["tagType"] == "Folder":
             entry["childCount"] = len(tag.get("tags", []))
         else:
-            for key in ("dataType", "valueSource", "value", "documentation", "typeId"):
+            for key in ("dataType", "valueSource", "opcItemPath", "opcServer", "value", "documentation", "typeId"):
                 if key in tag:
                     entry[key] = tag[key]
         results.append(entry)

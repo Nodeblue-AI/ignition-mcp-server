@@ -141,6 +141,12 @@ class TestTags:
         result = tags.parse_tags(source, provider="nonexistent")
         assert result == []
 
+    def test_opc_item_path_in_summary(self, source):
+        result = tags.parse_tags(source, "Conveyors/Line1")
+        running = next(t for t in result if t["name"] == "Running")
+        assert running["opcItemPath"] == "ns=1;s=[SampleController]Motor_1.Running"
+        assert running["opcServer"] == "Rockwell/Allen-Bradley OPC"
+
     def test_zip_list_tag_providers(self):
         source = open_project(str(ZIP_PROJECT))
         result = tags.list_tag_providers(source)

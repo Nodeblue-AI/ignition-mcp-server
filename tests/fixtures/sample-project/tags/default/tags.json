@@ -13,6 +13,8 @@
               "tagType": "AtomicTag",
               "dataType": "Boolean",
               "valueSource": "opc",
+              "opcItemPath": "ns=1;s=[SampleController]Motor_1.Running",
+              "opcServer": "Rockwell/Allen-Bradley OPC",
               "value": false,
               "documentation": "True when conveyor line 1 is running"
             },
@@ -21,6 +23,8 @@
               "tagType": "AtomicTag",
               "dataType": "Float4",
               "valueSource": "opc",
+              "opcItemPath": "ns=1;s=[SampleController]LineSpeed",
+              "opcServer": "Rockwell/Allen-Bradley OPC",
               "value": 0.0,
               "documentation": "Current speed in ft/min"
             },
@@ -29,6 +33,8 @@
               "tagType": "AtomicTag",
               "dataType": "Boolean",
               "valueSource": "opc",
+              "opcItemPath": "ns=1;s=[SampleController]Motor_1.Faulted",
+              "opcServer": "Rockwell/Allen-Bradley OPC",
               "value": false
             }
           ]

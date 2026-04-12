@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ignition-mcp-server"
-version = "0.3.1"
+version = "0.4.0"
 description = "MCP server for Ignition SCADA — read project resources, query live gateways, and give AI agents structured access to tags, views, scripts, UDTs, alarms, and named queries"
 readme = "README.md"
 license = "MIT"
