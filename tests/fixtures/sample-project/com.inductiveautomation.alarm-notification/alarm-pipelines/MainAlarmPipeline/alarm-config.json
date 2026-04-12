@@ -1,0 +1,39 @@
+{
+  "name": "MainAlarmPipeline",
+  "enabled": true,
+  "stages": [
+    {
+      "name": "Delay",
+      "type": "delay",
+      "config": {
+        "delaySeconds": 30
+      },
+      "transitions": [
+        {"target": "EmailNotification", "expression": "true"}
+      ]
+    },
+    {
+      "name": "EmailNotification",
+      "type": "notification",
+      "config": {
+        "notificationProfileName": "PlantEmail",
+        "subject": "Alarm: {itemName}",
+        "contactInfo": ["operators@example.com"],
+        "consolidationPeriod": 60
+      },
+      "transitions": [
+        {"target": "Escalation", "expression": "{isAcked} == false && {elapsedTime} > 300000"}
+      ]
+    },
+    {
+      "name": "Escalation",
+      "type": "notification",
+      "config": {
+        "notificationProfileName": "PlantSMS",
+        "contactInfo": ["supervisors"],
+        "consolidationPeriod": 120
+      },
+      "transitions": []
+    }
+  ]
+}

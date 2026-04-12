@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from ignition_mcp_server.parsers import scripts, tags, udts, views
+from ignition_mcp_server.parsers import alarms, named_queries, scripts, tags, udts, views
 from ignition_mcp_server.project_source import (
     DirectoryProjectSource,
     ZipProjectSource,
@@ -228,4 +228,101 @@ class TestUDTs:
     def test_zip_returns_same(self):
         dir_result = udts.get_udt(open_project(str(DIR_PROJECT)))
         zip_result = udts.get_udt(open_project(str(ZIP_PROJECT)))
+        assert dir_result == zip_result
+
+
+# ── Alarms ──────────────────────────────────────────────────
+
+
+class TestAlarms:
+    @pytest.fixture
+    def source(self):
+        return open_project(str(DIR_PROJECT))
+
+    def test_list_alarms(self, source):
+        result = alarms.list_alarms(source)
+        assert "MainAlarmPipeline" in result
+        assert "EscalationPipeline" in result
+        assert len(result) == 2
+
+    def test_get_alarm_structure(self, source):
+        result = alarms.get_alarm(source, "MainAlarmPipeline")
+        assert result["name"] == "MainAlarmPipeline"
+        assert result["enabled"] is True
+        assert len(result["stages"]) == 3
+
+    def test_alarm_stage_types(self, source):
+        result = alarms.get_alarm(source, "MainAlarmPipeline")
+        types = [s["type"] for s in result["stages"]]
+        assert types == ["delay", "notification", "notification"]
+
+    def test_alarm_stage_config(self, source):
+        result = alarms.get_alarm(source, "MainAlarmPipeline")
+        delay = result["stages"][0]
+        assert delay["name"] == "Delay"
+        assert delay["delaySeconds"] == 30
+
+    def test_alarm_notification_profile(self, source):
+        result = alarms.get_alarm(source, "MainAlarmPipeline")
+        email = result["stages"][1]
+        assert email["notificationProfileName"] == "PlantEmail"
+
+    def test_disabled_pipeline(self, source):
+        result = alarms.get_alarm(source, "EscalationPipeline")
+        assert result["enabled"] is False
+        assert len(result["stages"]) == 1
+
+    def test_zip_returns_same(self):
+        dir_result = alarms.list_alarms(open_project(str(DIR_PROJECT)))
+        zip_result = alarms.list_alarms(open_project(str(ZIP_PROJECT)))
+        assert dir_result == zip_result
+
+
+# ── Named Queries ───────────────────────────────────────────
+
+
+class TestNamedQueries:
+    @pytest.fixture
+    def source(self):
+        return open_project(str(DIR_PROJECT))
+
+    def test_list_named_queries(self, source):
+        result = named_queries.list_named_queries(source)
+        assert "GetActiveFaults" in result
+        assert "LogFault" in result
+        assert "GetMotorHistory" in result
+        assert len(result) == 3
+
+    def test_get_query_structure(self, source):
+        result = named_queries.get_named_query(source, "GetActiveFaults")
+        assert result["name"] == "GetActiveFaults"
+        assert result["database"] == "PlantHistorian"
+        assert result["queryType"] == "Query"
+        assert "SELECT" in result["query"]
+
+    def test_query_parameters(self, source):
+        result = named_queries.get_named_query(source, "GetActiveFaults")
+        assert "area" in result["parameters"]
+        assert result["parameters"]["area"]["dataType"] == "String"
+
+    def test_update_query_type(self, source):
+        result = named_queries.get_named_query(source, "LogFault")
+        assert result["queryType"] == "Update"
+        assert "INSERT" in result["query"]
+
+    def test_multiple_parameters(self, source):
+        result = named_queries.get_named_query(source, "GetMotorHistory")
+        params = result["parameters"]
+        assert len(params) == 3
+        assert "motorName" in params
+        assert "startTime" in params
+        assert "endTime" in params
+
+    def test_query_description(self, source):
+        result = named_queries.get_named_query(source, "GetActiveFaults")
+        assert "active faults" in result["description"].lower()
+
+    def test_zip_returns_same(self):
+        dir_result = named_queries.list_named_queries(open_project(str(DIR_PROJECT)))
+        zip_result = named_queries.list_named_queries(open_project(str(ZIP_PROJECT)))
         assert dir_result == zip_result

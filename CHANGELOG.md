@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.0] - 2026-04-12
+
+### Added
+- **`list_alarms` / `get_alarm`** — parse alarm pipeline configurations including stages, notification profiles, contact info, consolidation periods, and transitions
+- **`list_named_queries` / `get_named_query`** — parse SQL named query definitions with parameters, database targets, query types (Query/Update), and descriptions
+- Synthetic alarm pipeline fixtures (MainAlarmPipeline with 3-stage delay→email→escalation flow, EscalationPipeline disabled)
+- Synthetic named query fixtures (GetActiveFaults, LogFault, GetMotorHistory with parameterized SQL)
+- 14 new tests (45 total)
+
 ## [0.1.0] - 2026-04-12
 
 ### Added

@@ -1,0 +1,11 @@
+{
+  "database": "PlantHistorian",
+  "queryType": "Query",
+  "query": "SELECT timestamp, speed_rpm, running, faulted FROM motor_history WHERE motor_name = :motorName AND timestamp BETWEEN :startTime AND :endTime ORDER BY timestamp",
+  "parameters": {
+    "motorName": {"dataType": "String", "defaultValue": ""},
+    "startTime": {"dataType": "DateTime", "defaultValue": null},
+    "endTime": {"dataType": "DateTime", "defaultValue": null}
+  },
+  "description": "Get historical motor data for a specific motor within a time range"
+}

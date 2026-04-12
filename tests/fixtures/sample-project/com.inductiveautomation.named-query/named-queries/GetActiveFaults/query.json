@@ -1,0 +1,9 @@
+{
+  "database": "PlantHistorian",
+  "queryType": "Query",
+  "query": "SELECT fault_id, tag_path, fault_time, description FROM active_faults WHERE area = :area ORDER BY fault_time DESC",
+  "parameters": {
+    "area": {"dataType": "String", "defaultValue": ""}
+  },
+  "description": "Returns all currently active faults, optionally filtered by plant area"
+}

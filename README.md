@@ -16,6 +16,8 @@
 - **Perspective Views** — read component trees, bindings, event handlers, and styles
 - **Scripts** — read project library scripts and gateway event scripts with scope info
 - **UDTs** — list and inspect User Defined Type definitions with member details
+- **Alarm Pipelines** — read alarm notification configurations with stages, profiles, and transitions
+- **Named Queries** — read SQL query definitions with parameters, database targets, and types
 
 Works with both **Ignition 8.1+ project exports** (`.zip` files) and **8.3+ filesystem-based projects** (direct directory access).
 
@@ -153,6 +155,30 @@ Get UDT definition(s) with member details, parameters, and documentation.
 get_udt("/path/to/project", "Motor_UDT")
 ```
 
+### `list_alarms(project_path)`
+List all alarm pipeline names in the project.
+
+### `get_alarm(project_path, pipeline_name)`
+Get an alarm pipeline's configuration including stages, notification profiles, and transitions.
+
+```
+get_alarm("/path/to/project", "MainAlarmPipeline")
+```
+
+Returns pipeline stages with type (delay, notification), notification profile names, contact info, consolidation periods, and transition counts.
+
+### `list_named_queries(project_path)`
+List all named query names in the project.
+
+### `get_named_query(project_path, query_name)`
+Get a named query's SQL, parameters, database connection, and type (Query vs Update).
+
+```
+get_named_query("/path/to/project", "GetActiveFaults")
+```
+
+Returns the SQL text, parameter definitions with data types and defaults, target database, and description.
+
 ---
 
 ## Supported Project Formats
@@ -200,9 +226,9 @@ Agent: The Overview view has a flex container with 3 children:
 
 ## Roadmap
 
-### v0.2 — Alarms & Named Queries
-- [ ] `get_alarms(project_path)` — parse alarm pipeline configurations
-- [ ] `get_named_queries(project_path)` — parse SQL named queries with parameters
+### v0.2 — Alarms & Named Queries ✅
+- [x] `get_alarms(project_path)` — parse alarm pipeline configurations
+- [x] `get_named_queries(project_path)` — parse SQL named queries with parameters
 
 ### v0.3 — Live Gateway Interaction
 - [ ] `read_tag(tag_path)` / `write_tag(tag_path, value)` — live tag interaction via Ignition WebDev module

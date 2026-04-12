@@ -7,14 +7,15 @@ from typing import Any
 
 from fastmcp import FastMCP
 
-from ignition_mcp_server.parsers import scripts, tags, udts, views
+from ignition_mcp_server.parsers import alarms, named_queries, scripts, tags, udts, views
 from ignition_mcp_server.project_source import open_project
 
 mcp = FastMCP(
     "Ignition MCP Server",
     instructions=(
         "This server provides read-only access to Ignition SCADA projects. "
-        "Use it to explore tags, Perspective views, scripts, and UDT definitions. "
+        "Use it to explore tags, Perspective views, scripts, UDT definitions, "
+        "alarm pipelines, and named queries. "
         "Provide a project_path pointing to an Ignition project directory or .zip export."
     ),
 )
@@ -108,4 +109,52 @@ def get_udt(project_path: str, udt_name: str = "") -> str:
     """
     source = open_project(project_path)
     result = udts.get_udt(source, udt_name or None)
+    return json.dumps(result, indent=2)
+
+
+@mcp.tool
+def list_alarms(project_path: str) -> str:
+    """List all alarm pipeline names in an Ignition project.
+
+    Args:
+        project_path: Path to Ignition project directory or .zip export.
+    """
+    source = open_project(project_path)
+    return json.dumps(alarms.list_alarms(source), indent=2)
+
+
+@mcp.tool
+def get_alarm(project_path: str, pipeline_name: str) -> str:
+    """Get an alarm pipeline's configuration including stages, notifications, and transitions.
+
+    Args:
+        project_path: Path to Ignition project directory or .zip export.
+        pipeline_name: Alarm pipeline name (from list_alarms output).
+    """
+    source = open_project(project_path)
+    result = alarms.get_alarm(source, pipeline_name)
+    return json.dumps(result, indent=2)
+
+
+@mcp.tool
+def list_named_queries(project_path: str) -> str:
+    """List all named query names in an Ignition project.
+
+    Args:
+        project_path: Path to Ignition project directory or .zip export.
+    """
+    source = open_project(project_path)
+    return json.dumps(named_queries.list_named_queries(source), indent=2)
+
+
+@mcp.tool
+def get_named_query(project_path: str, query_name: str) -> str:
+    """Get a named query's SQL, parameters, database connection, and type.
+
+    Args:
+        project_path: Path to Ignition project directory or .zip export.
+        query_name: Named query name (from list_named_queries output).
+    """
+    source = open_project(project_path)
+    result = named_queries.get_named_query(source, query_name)
     return json.dumps(result, indent=2)

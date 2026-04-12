@@ -1,0 +1,16 @@
+{
+  "name": "EscalationPipeline",
+  "enabled": false,
+  "stages": [
+    {
+      "name": "ImmediateNotify",
+      "type": "notification",
+      "config": {
+        "notificationProfileName": "PlantSMS",
+        "contactInfo": ["on-call-engineer"],
+        "consolidationPeriod": 0
+      },
+      "transitions": []
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "database": "PlantHistorian",
+  "queryType": "Update",
+  "query": "INSERT INTO fault_log (tag_index, fault_time) VALUES (:tagIndex, :timestamp)",
+  "parameters": {
+    "tagIndex": {"dataType": "Int4", "defaultValue": 0},
+    "timestamp": {"dataType": "DateTime", "defaultValue": null}
+  },
+  "description": "Log a fault event to the historian database"
+}
