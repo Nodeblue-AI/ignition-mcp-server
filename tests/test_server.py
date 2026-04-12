@@ -19,6 +19,12 @@ DIR_PROJECT = FIXTURES / "sample-project"
 ZIP_PROJECT = FIXTURES / "sample-project.zip"
 
 
+@pytest.fixture(autouse=True)
+def _clear_cache():
+    """Clear the open_project LRU cache between tests."""
+    open_project.cache_clear()
+
+
 # ── Project Source ──────────────────────────────────────────
 
 
@@ -59,6 +65,16 @@ class TestProjectSource:
         (tmp_path / "empty").mkdir()
         with pytest.raises(FileNotFoundError):
             open_project(str(tmp_path / "empty"))
+
+    def test_cache_returns_same_instance(self):
+        a = open_project(str(DIR_PROJECT))
+        b = open_project(str(DIR_PROJECT))
+        assert a is b
+
+    def test_zip_context_manager(self):
+        with ZipProjectSource(ZIP_PROJECT) as src:
+            info = src.project_info()
+            assert info["title"] == "Sample Project"
 
 
 # ── Tags ────────────────────────────────────────────────────
@@ -109,6 +125,27 @@ class TestTags:
         dir_result = tags.parse_tags(open_project(str(DIR_PROJECT)))
         zip_result = tags.parse_tags(open_project(str(ZIP_PROJECT)))
         assert dir_result == zip_result
+
+    def test_list_tag_providers(self, source):
+        result = tags.list_tag_providers(source)
+        assert "default" in result
+        assert "edge" in result
+        assert len(result) == 2
+
+    def test_edge_provider(self, source):
+        result = tags.parse_tags(source, provider="edge")
+        names = [t["name"] for t in result]
+        assert "EdgeTemp" in names
+
+    def test_nonexistent_provider(self, source):
+        result = tags.parse_tags(source, provider="nonexistent")
+        assert result == []
+
+    def test_zip_list_tag_providers(self):
+        source = open_project(str(ZIP_PROJECT))
+        result = tags.list_tag_providers(source)
+        assert "default" in result
+        assert "edge" in result
 
 
 # ── Views ───────────────────────────────────────────────────
@@ -326,3 +363,49 @@ class TestNamedQueries:
         dir_result = named_queries.list_named_queries(open_project(str(DIR_PROJECT)))
         zip_result = named_queries.list_named_queries(open_project(str(ZIP_PROJECT)))
         assert dir_result == zip_result
+
+
+# ── Error Handling ──────────────────────────────────────────
+
+
+class TestErrorHandling:
+    def test_get_tags_bad_project(self):
+        from ignition_mcp_server.server import get_tags
+        result = json.loads(get_tags("/nonexistent/project"))
+        assert "error" in result
+
+    def test_get_view_bad_path(self):
+        from ignition_mcp_server.server import get_view
+        result = json.loads(get_view(str(DIR_PROJECT), "NonexistentView"))
+        assert "error" in result
+
+    def test_get_script_bad_path(self):
+        from ignition_mcp_server.server import get_script
+        result = json.loads(get_script(str(DIR_PROJECT), "nonexistent/path"))
+        # Should return empty code, not crash
+        assert isinstance(result, dict)
+
+    def test_read_tag_no_gateway(self):
+        from ignition_mcp_server import server
+        server._gateway = None
+        result = json.loads(server.read_tag("[default]test"))
+        assert "error" in result
+        assert "No gateway configured" in result["error"]
+
+    def test_write_tag_no_gateway(self):
+        from ignition_mcp_server import server
+        server._gateway = None
+        result = json.loads(server.write_tag("[default]test", "123"))
+        assert "error" in result
+
+    def test_execute_script_no_gateway(self):
+        from ignition_mcp_server import server
+        server._gateway = None
+        result = json.loads(server.execute_script("x = 1"))
+        assert "error" in result
+
+    def test_get_history_no_gateway(self):
+        from ignition_mcp_server import server
+        server._gateway = None
+        result = json.loads(server.get_history("[default]test", "2026-01-01", "2026-01-02"))
+        assert "error" in result

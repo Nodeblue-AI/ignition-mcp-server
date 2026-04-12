@@ -5,7 +5,8 @@ from __future__ import annotations
 import json
 import zipfile
 from abc import ABC, abstractmethod
-from pathlib import Path, PurePosixPath
+from functools import lru_cache
+from pathlib import Path
 from typing import Any
 
 
@@ -77,10 +78,27 @@ class ZipProjectSource(ProjectSource):
     def close(self) -> None:
         self._zf.close()
 
+    def __enter__(self) -> ZipProjectSource:
+        return self
 
+    def __exit__(self, *exc: object) -> None:
+        self.close()
+
+    def __del__(self) -> None:
+        try:
+            self._zf.close()
+        except Exception:
+            pass
+
+
+@lru_cache(maxsize=16)
 def open_project(path: str) -> ProjectSource:
-    """Open an Ignition project from a .zip file or directory path."""
-    p = Path(path)
+    """Open an Ignition project from a .zip file or directory path.
+
+    Results are cached — repeated calls with the same path return the same source.
+    """
+    p = Path(path).resolve()
+    path_str = str(p)  # normalize for cache key
     if not p.exists():
         raise FileNotFoundError(f"Project path not found: {path}")
     if p.is_file() and p.suffix == ".zip":

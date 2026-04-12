@@ -125,14 +125,18 @@ Connect from any MCP client using the SSE URL: `http://<host>:8080/sse`
 ### `ping`
 Health check. Returns `"pong"`.
 
-### `get_tags(project_path, tag_path?)`
-Browse tags in the project. Optionally filter by folder path.
+### `get_tags(project_path, tag_path?, provider?)`
+Browse tags in the project. Optionally filter by folder path and tag provider.
 
 ```
 get_tags("/path/to/project", "Conveyors/Line1")
+get_tags("/path/to/project", "", "edge")
 ```
 
 Returns tag names, types, data types, values, and documentation.
+
+### `list_tag_providers(project_path)`
+List all tag provider names in the project (e.g. `default`, `edge`, `MQTT`).
 
 ### `list_views(project_path)`
 List all Perspective view paths in the project.

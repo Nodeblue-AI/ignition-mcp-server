@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.1] - 2026-04-12
+
+### Fixed
+- **Structured error handling** — all tools now return `{"error": "..."}` JSON instead of throwing raw Python exceptions. Bad project paths, missing views, gateway connection failures all produce clean error messages for the AI agent.
+- **ZipProjectSource file handle leak** — added `__del__`, `__enter__`/`__exit__` context manager support. Zip files are now properly closed.
+- **Repeated project parsing** — `open_project()` is now LRU-cached (maxsize=16). Multiple tool calls against the same project reuse the parsed source instead of re-reading from disk/zip each time.
+
+### Added
+- **Multi-provider tag support** — `get_tags()` now accepts a `provider` parameter (default: `"default"`). Real Ignition projects can have multiple tag providers (e.g. `default`, `edge`, `MQTT`).
+- **`list_tag_providers(project_path)`** — new tool to discover all tag provider names in a project.
+- 13 new tests: cache behavior, context manager, multi-provider tags, structured error handling (71 total).
+
 ## [0.3.0] - 2026-04-12
 
 ### Added

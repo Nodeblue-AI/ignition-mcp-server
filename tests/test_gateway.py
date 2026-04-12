@@ -154,8 +154,9 @@ class TestLiveTools:
     def test_no_gateway_raises(self):
         from ignition_mcp_server import server
         server._gateway = None
-        with pytest.raises(RuntimeError, match="No gateway configured"):
-            server.read_tag("[default]test")
+        result = json.loads(server.read_tag("[default]test"))
+        assert "error" in result
+        assert "No gateway configured" in result["error"]
 
     def test_configure_gateway(self, mock_gateway):
         from ignition_mcp_server.server import configure_gateway, _require_gateway

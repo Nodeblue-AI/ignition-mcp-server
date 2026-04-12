@@ -28,6 +28,11 @@ def _require_gateway() -> GatewayClient:
         )
     return _gateway
 
+
+def _error(msg: str) -> str:
+    return json.dumps({"error": msg})
+
+
 mcp = FastMCP(
     "Ignition MCP Server",
     instructions=(
@@ -47,16 +52,39 @@ def ping() -> str:
 
 
 @mcp.tool
-def get_tags(project_path: str, tag_path: str = "") -> str:
+def get_tags(project_path: str, tag_path: str = "", provider: str = "default") -> str:
     """Get tags from an Ignition project, optionally filtered by folder path.
 
     Args:
         project_path: Path to Ignition project directory or .zip export.
         tag_path: Optional folder path to filter (e.g. "Conveyors/Line1").
+        provider: Tag provider name (default: "default"). Use list_tag_providers to discover.
     """
-    source = open_project(project_path)
-    result = tags.parse_tags(source, tag_path)
-    return json.dumps(result, indent=2)
+    try:
+        source = open_project(project_path)
+        result = tags.parse_tags(source, tag_path, provider)
+        return json.dumps(result, indent=2)
+    except FileNotFoundError as e:
+        return _error(str(e))
+    except Exception as e:
+        return _error(f"Failed to read tags: {e}")
+
+
+@mcp.tool
+def list_tag_providers(project_path: str) -> str:
+    """List all tag provider names in an Ignition project (e.g. 'default', 'edge').
+
+    Args:
+        project_path: Path to Ignition project directory or .zip export.
+    """
+    try:
+        source = open_project(project_path)
+        result = tags.list_tag_providers(source)
+        return json.dumps(result, indent=2)
+    except FileNotFoundError as e:
+        return _error(str(e))
+    except Exception as e:
+        return _error(f"Failed to list tag providers: {e}")
 
 
 @mcp.tool
@@ -66,8 +94,13 @@ def list_views(project_path: str) -> str:
     Args:
         project_path: Path to Ignition project directory or .zip export.
     """
-    source = open_project(project_path)
-    return json.dumps(views.list_views(source), indent=2)
+    try:
+        source = open_project(project_path)
+        return json.dumps(views.list_views(source), indent=2)
+    except FileNotFoundError as e:
+        return _error(str(e))
+    except Exception as e:
+        return _error(f"Failed to list views: {e}")
 
 
 @mcp.tool
@@ -78,9 +111,14 @@ def get_view(project_path: str, view_path: str) -> str:
         project_path: Path to Ignition project directory or .zip export.
         view_path: View path (e.g. "Overview" or "Screens/MotorDetail").
     """
-    source = open_project(project_path)
-    result = views.get_view(source, view_path)
-    return json.dumps(result, indent=2)
+    try:
+        source = open_project(project_path)
+        result = views.get_view(source, view_path)
+        return json.dumps(result, indent=2)
+    except FileNotFoundError as e:
+        return _error(str(e))
+    except Exception as e:
+        return _error(f"Failed to read view '{view_path}': {e}")
 
 
 @mcp.tool
@@ -90,8 +128,13 @@ def list_scripts(project_path: str) -> str:
     Args:
         project_path: Path to Ignition project directory or .zip export.
     """
-    source = open_project(project_path)
-    return json.dumps(scripts.list_scripts(source), indent=2)
+    try:
+        source = open_project(project_path)
+        return json.dumps(scripts.list_scripts(source), indent=2)
+    except FileNotFoundError as e:
+        return _error(str(e))
+    except Exception as e:
+        return _error(f"Failed to list scripts: {e}")
 
 
 @mcp.tool
@@ -102,9 +145,14 @@ def get_script(project_path: str, script_path: str) -> str:
         project_path: Path to Ignition project directory or .zip export.
         script_path: Script resource path (from list_scripts output).
     """
-    source = open_project(project_path)
-    result = scripts.get_script(source, script_path)
-    return json.dumps(result, indent=2)
+    try:
+        source = open_project(project_path)
+        result = scripts.get_script(source, script_path)
+        return json.dumps(result, indent=2)
+    except FileNotFoundError as e:
+        return _error(str(e))
+    except Exception as e:
+        return _error(f"Failed to read script '{script_path}': {e}")
 
 
 @mcp.tool
@@ -114,8 +162,13 @@ def list_udts(project_path: str) -> str:
     Args:
         project_path: Path to Ignition project directory or .zip export.
     """
-    source = open_project(project_path)
-    return json.dumps(udts.list_udts(source), indent=2)
+    try:
+        source = open_project(project_path)
+        return json.dumps(udts.list_udts(source), indent=2)
+    except FileNotFoundError as e:
+        return _error(str(e))
+    except Exception as e:
+        return _error(f"Failed to list UDTs: {e}")
 
 
 @mcp.tool
@@ -126,9 +179,14 @@ def get_udt(project_path: str, udt_name: str = "") -> str:
         project_path: Path to Ignition project directory or .zip export.
         udt_name: Optional UDT name. If empty, returns all UDTs.
     """
-    source = open_project(project_path)
-    result = udts.get_udt(source, udt_name or None)
-    return json.dumps(result, indent=2)
+    try:
+        source = open_project(project_path)
+        result = udts.get_udt(source, udt_name or None)
+        return json.dumps(result, indent=2)
+    except FileNotFoundError as e:
+        return _error(str(e))
+    except Exception as e:
+        return _error(f"Failed to read UDT: {e}")
 
 
 @mcp.tool
@@ -138,8 +196,13 @@ def list_alarms(project_path: str) -> str:
     Args:
         project_path: Path to Ignition project directory or .zip export.
     """
-    source = open_project(project_path)
-    return json.dumps(alarms.list_alarms(source), indent=2)
+    try:
+        source = open_project(project_path)
+        return json.dumps(alarms.list_alarms(source), indent=2)
+    except FileNotFoundError as e:
+        return _error(str(e))
+    except Exception as e:
+        return _error(f"Failed to list alarms: {e}")
 
 
 @mcp.tool
@@ -150,9 +213,14 @@ def get_alarm(project_path: str, pipeline_name: str) -> str:
         project_path: Path to Ignition project directory or .zip export.
         pipeline_name: Alarm pipeline name (from list_alarms output).
     """
-    source = open_project(project_path)
-    result = alarms.get_alarm(source, pipeline_name)
-    return json.dumps(result, indent=2)
+    try:
+        source = open_project(project_path)
+        result = alarms.get_alarm(source, pipeline_name)
+        return json.dumps(result, indent=2)
+    except FileNotFoundError as e:
+        return _error(str(e))
+    except Exception as e:
+        return _error(f"Failed to read alarm pipeline '{pipeline_name}': {e}")
 
 
 @mcp.tool
@@ -162,8 +230,13 @@ def list_named_queries(project_path: str) -> str:
     Args:
         project_path: Path to Ignition project directory or .zip export.
     """
-    source = open_project(project_path)
-    return json.dumps(named_queries.list_named_queries(source), indent=2)
+    try:
+        source = open_project(project_path)
+        return json.dumps(named_queries.list_named_queries(source), indent=2)
+    except FileNotFoundError as e:
+        return _error(str(e))
+    except Exception as e:
+        return _error(f"Failed to list named queries: {e}")
 
 
 @mcp.tool
@@ -174,9 +247,14 @@ def get_named_query(project_path: str, query_name: str) -> str:
         project_path: Path to Ignition project directory or .zip export.
         query_name: Named query name (from list_named_queries output).
     """
-    source = open_project(project_path)
-    result = named_queries.get_named_query(source, query_name)
-    return json.dumps(result, indent=2)
+    try:
+        source = open_project(project_path)
+        result = named_queries.get_named_query(source, query_name)
+        return json.dumps(result, indent=2)
+    except FileNotFoundError as e:
+        return _error(str(e))
+    except Exception as e:
+        return _error(f"Failed to read named query '{query_name}': {e}")
 
 
 # ── Live Gateway Tools ──────────────────────────────────────
@@ -192,10 +270,15 @@ def read_tag(tag_path: str) -> str:
     Args:
         tag_path: Tag path(s), comma-separated for multiple (e.g. "[default]Conveyors/Line1/Speed").
     """
-    gw = _require_gateway()
-    paths = [p.strip() for p in tag_path.split(",")]
-    result = gw.read_tags(paths)
-    return json.dumps(result, indent=2)
+    try:
+        gw = _require_gateway()
+        paths = [p.strip() for p in tag_path.split(",")]
+        result = gw.read_tags(paths)
+        return json.dumps(result, indent=2)
+    except RuntimeError as e:
+        return _error(str(e))
+    except Exception as e:
+        return _error(f"Failed to read tag(s): {e}")
 
 
 @mcp.tool
@@ -209,21 +292,26 @@ def write_tag(tag_path: str, value: str) -> str:
         tag_path: Full tag path (e.g. "[default]Conveyors/Line1/Speed").
         value: Value to write (string representation — gateway coerces to tag data type).
     """
-    gw = _require_gateway()
-    # Attempt numeric coercion for common cases
-    coerced: Any = value
-    if value.lower() in ("true", "false"):
-        coerced = value.lower() == "true"
-    else:
-        try:
-            coerced = int(value)
-        except ValueError:
+    try:
+        gw = _require_gateway()
+        # Attempt numeric coercion for common cases
+        coerced: Any = value
+        if value.lower() in ("true", "false"):
+            coerced = value.lower() == "true"
+        else:
             try:
-                coerced = float(value)
+                coerced = int(value)
             except ValueError:
-                pass
-    result = gw.write_tag(tag_path, coerced)
-    return json.dumps(result, indent=2)
+                try:
+                    coerced = float(value)
+                except ValueError:
+                    pass
+        result = gw.write_tag(tag_path, coerced)
+        return json.dumps(result, indent=2)
+    except RuntimeError as e:
+        return _error(str(e))
+    except Exception as e:
+        return _error(f"Failed to write tag '{tag_path}': {e}")
 
 
 @mcp.tool
@@ -236,9 +324,14 @@ def execute_script(code: str) -> str:
     Args:
         code: Python code to execute on the gateway.
     """
-    gw = _require_gateway()
-    result = gw.execute_script(code)
-    return json.dumps(result, indent=2)
+    try:
+        gw = _require_gateway()
+        result = gw.execute_script(code)
+        return json.dumps(result, indent=2)
+    except RuntimeError as e:
+        return _error(str(e))
+    except Exception as e:
+        return _error(f"Failed to execute script: {e}")
 
 
 @mcp.tool
@@ -253,6 +346,11 @@ def get_history(tag_path: str, start: str, end: str) -> str:
         start: Start time as ISO 8601 (e.g. "2026-04-12T00:00:00Z").
         end: End time as ISO 8601 (e.g. "2026-04-12T12:00:00Z").
     """
-    gw = _require_gateway()
-    result = gw.query_history(tag_path, start, end)
-    return json.dumps(result, indent=2)
+    try:
+        gw = _require_gateway()
+        result = gw.query_history(tag_path, start, end)
+        return json.dumps(result, indent=2)
+    except RuntimeError as e:
+        return _error(str(e))
+    except Exception as e:
+        return _error(f"Failed to query history: {e}")

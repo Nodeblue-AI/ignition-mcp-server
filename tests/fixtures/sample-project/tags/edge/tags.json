@@ -1,0 +1,11 @@
+{
+  "tags": [
+    {
+      "name": "EdgeTemp",
+      "tagType": "AtomicTag",
+      "dataType": "Float4",
+      "valueSource": "opc",
+      "value": 72.5
+    }
+  ]
+}
