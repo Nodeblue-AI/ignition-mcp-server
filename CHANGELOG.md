@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.0] - 2026-04-12
+
+### Added
+- **Live gateway interaction** via Ignition WebDev module REST API
+- **`read_tag`** — read current values of one or more tags from a live gateway (comma-separated for multiple)
+- **`write_tag`** — write a value to a tag with automatic boolean/numeric coercion
+- **`execute_script`** — execute Python scripts on the gateway in gateway scope
+- **`get_history`** — query historical tag data with ISO 8601 time range
+- **`GatewayClient`** — HTTP client module wrapping WebDev API endpoints with auth support
+- CLI options: `--gateway-url`, `--gateway-username`, `--gateway-password`
+- Gateway setup documentation with WebDev endpoint examples
+- 13 new tests with mock HTTP server (58 total)
+
 ## [0.2.0] - 2026-04-12
 
 ### Added

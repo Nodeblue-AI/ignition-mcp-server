@@ -7,16 +7,35 @@ from typing import Any
 
 from fastmcp import FastMCP
 
+from ignition_mcp_server.gateway_client import GatewayClient
 from ignition_mcp_server.parsers import alarms, named_queries, scripts, tags, udts, views
 from ignition_mcp_server.project_source import open_project
+
+# Set by CLI when --gateway-url is provided
+_gateway: GatewayClient | None = None
+
+
+def configure_gateway(url: str, username: str = "", password: str = "") -> None:
+    """Configure the live gateway connection."""
+    global _gateway
+    _gateway = GatewayClient(url, username, password)
+
+
+def _require_gateway() -> GatewayClient:
+    if _gateway is None:
+        raise RuntimeError(
+            "No gateway configured. Start the server with --gateway-url to enable live tools."
+        )
+    return _gateway
 
 mcp = FastMCP(
     "Ignition MCP Server",
     instructions=(
-        "This server provides read-only access to Ignition SCADA projects. "
-        "Use it to explore tags, Perspective views, scripts, UDT definitions, "
-        "alarm pipelines, and named queries. "
-        "Provide a project_path pointing to an Ignition project directory or .zip export."
+        "This server provides access to Ignition SCADA projects and gateways. "
+        "Use project tools to explore tags, views, scripts, UDTs, alarms, and named queries "
+        "from project files (provide project_path). "
+        "Use live tools (read_tag, write_tag, execute_script, get_history) to interact "
+        "with a running Ignition gateway (requires --gateway-url at startup)."
     ),
 )
 
@@ -157,4 +176,83 @@ def get_named_query(project_path: str, query_name: str) -> str:
     """
     source = open_project(project_path)
     result = named_queries.get_named_query(source, query_name)
+    return json.dumps(result, indent=2)
+
+
+# ── Live Gateway Tools ──────────────────────────────────────
+
+
+@mcp.tool
+def read_tag(tag_path: str) -> str:
+    """Read the current value of one or more tags from a live Ignition gateway.
+
+    Requires the server to be started with --gateway-url pointing to an Ignition
+    gateway with the WebDev module installed.
+
+    Args:
+        tag_path: Tag path(s), comma-separated for multiple (e.g. "[default]Conveyors/Line1/Speed").
+    """
+    gw = _require_gateway()
+    paths = [p.strip() for p in tag_path.split(",")]
+    result = gw.read_tags(paths)
+    return json.dumps(result, indent=2)
+
+
+@mcp.tool
+def write_tag(tag_path: str, value: str) -> str:
+    """Write a value to a tag on a live Ignition gateway.
+
+    Requires the server to be started with --gateway-url. The value is sent as-is;
+    the gateway handles type coercion.
+
+    Args:
+        tag_path: Full tag path (e.g. "[default]Conveyors/Line1/Speed").
+        value: Value to write (string representation — gateway coerces to tag data type).
+    """
+    gw = _require_gateway()
+    # Attempt numeric coercion for common cases
+    coerced: Any = value
+    if value.lower() in ("true", "false"):
+        coerced = value.lower() == "true"
+    else:
+        try:
+            coerced = int(value)
+        except ValueError:
+            try:
+                coerced = float(value)
+            except ValueError:
+                pass
+    result = gw.write_tag(tag_path, coerced)
+    return json.dumps(result, indent=2)
+
+
+@mcp.tool
+def execute_script(code: str) -> str:
+    """Execute a Python script on the Ignition gateway and return the result.
+
+    Requires the server to be started with --gateway-url. The script runs in
+    gateway scope with access to system.* functions.
+
+    Args:
+        code: Python code to execute on the gateway.
+    """
+    gw = _require_gateway()
+    result = gw.execute_script(code)
+    return json.dumps(result, indent=2)
+
+
+@mcp.tool
+def get_history(tag_path: str, start: str, end: str) -> str:
+    """Query historical tag data from a live Ignition gateway.
+
+    Requires the server to be started with --gateway-url and a historian
+    configured on the gateway.
+
+    Args:
+        tag_path: Full tag path (e.g. "[default]Conveyors/Line1/Speed").
+        start: Start time as ISO 8601 (e.g. "2026-04-12T00:00:00Z").
+        end: End time as ISO 8601 (e.g. "2026-04-12T12:00:00Z").
+    """
+    gw = _require_gateway()
+    result = gw.query_history(tag_path, start, end)
     return json.dumps(result, indent=2)

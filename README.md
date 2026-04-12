@@ -18,6 +18,9 @@
 - **UDTs** — list and inspect User Defined Type definitions with member details
 - **Alarm Pipelines** — read alarm notification configurations with stages, profiles, and transitions
 - **Named Queries** — read SQL query definitions with parameters, database targets, and types
+- **Live Tag Read/Write** — read and write tag values on a running Ignition gateway via WebDev
+- **Script Execution** — run Python scripts on the gateway in gateway scope
+- **Tag History** — query historical tag data with time range filtering
 
 Works with both **Ignition 8.1+ project exports** (`.zip` files) and **8.3+ filesystem-based projects** (direct directory access).
 
@@ -62,6 +65,14 @@ ignition-mcp-server
 ```bash
 ignition-mcp-server --transport sse --port 8080
 ```
+
+### With live gateway connection
+
+```bash
+ignition-mcp-server --gateway-url https://my-gateway:8088 --gateway-username admin --gateway-password changeme
+```
+
+This enables the `read_tag`, `write_tag`, `execute_script`, and `get_history` tools. Requires the [WebDev module](https://docs.inductiveautomation.com/docs/8.1/appendix/modules/web-dev-module) on the gateway with API endpoints configured (see [Gateway Setup](#gateway-setup) below).
 
 ---
 
@@ -179,6 +190,43 @@ get_named_query("/path/to/project", "GetActiveFaults")
 
 Returns the SQL text, parameter definitions with data types and defaults, target database, and description.
 
+### `read_tag(tag_path)`
+Read the current value of one or more tags from a live gateway. Comma-separate for multiple tags.
+
+```
+read_tag("[default]Conveyors/Line1/Speed")
+read_tag("[default]Conveyors/Line1/Speed, [default]Conveyors/Line1/Running")
+```
+
+Requires `--gateway-url` at startup.
+
+### `write_tag(tag_path, value)`
+Write a value to a tag on a live gateway. Handles boolean/numeric coercion automatically.
+
+```
+write_tag("[default]Conveyors/Line1/Speed", "1800")
+```
+
+Requires `--gateway-url` at startup.
+
+### `execute_script(code)`
+Execute a Python script on the Ignition gateway in gateway scope.
+
+```
+execute_script("system.tag.readBlocking(['[default]Conveyors/Line1/Speed'])")
+```
+
+Requires `--gateway-url` at startup.
+
+### `get_history(tag_path, start, end)`
+Query historical tag data from the gateway's historian.
+
+```
+get_history("[default]Conveyors/Line1/Speed", "2026-04-12T00:00:00Z", "2026-04-12T12:00:00Z")
+```
+
+Requires `--gateway-url` at startup.
+
 ---
 
 ## Supported Project Formats
@@ -224,16 +272,47 @@ Agent: The Overview view has a flex container with 3 children:
 
 ---
 
+## Gateway Setup
+
+The live tools (`read_tag`, `write_tag`, `execute_script`, `get_history`) require the [WebDev module](https://docs.inductiveautomation.com/docs/8.1/appendix/modules/web-dev-module) on your Ignition gateway with the following REST endpoints:
+
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/system/webdev/api/tags/read` | POST | Read tag values |
+| `/system/webdev/api/tags/write` | POST | Write tag values |
+| `/system/webdev/api/script/run` | POST | Execute gateway scripts |
+| `/system/webdev/api/history/query` | POST | Query tag history |
+
+Example WebDev Python resource for `/api/tags/read`:
+
+```python
+def doPost(request, session):
+    import json
+    body = json.loads(request["data"])
+    paths = body.get("tagPaths", [])
+    values = system.tag.readBlocking(paths)
+    return {
+        "json": [
+            {"path": str(v.path), "value": v.value, "quality": str(v.quality)}
+            for v in values
+        ]
+    }
+```
+
+See the [Ignition WebDev docs](https://docs.inductiveautomation.com/docs/8.1/appendix/modules/web-dev-module) for full setup instructions.
+
+---
+
 ## Roadmap
 
 ### v0.2 — Alarms & Named Queries ✅
 - [x] `get_alarms(project_path)` — parse alarm pipeline configurations
 - [x] `get_named_queries(project_path)` — parse SQL named queries with parameters
 
-### v0.3 — Live Gateway Interaction
-- [ ] `read_tag(tag_path)` / `write_tag(tag_path, value)` — live tag interaction via Ignition WebDev module
-- [ ] `execute_script(code)` — run scripts on the gateway
-- [ ] `get_history(tag_path, start, end)` — query tag history
+### v0.3 — Live Gateway Interaction ✅
+- [x] `read_tag(tag_path)` / `write_tag(tag_path, value)` — live tag interaction via Ignition WebDev module
+- [x] `execute_script(code)` — run scripts on the gateway
+- [x] `get_history(tag_path, start, end)` — query tag history
 
 ### v0.4 — Cross-Platform Intelligence
 - [ ] Cross-reference Ignition tags with Studio 5000 L5X PLC logic

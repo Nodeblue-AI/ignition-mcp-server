@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ignition-mcp-server"
-version = "0.2.0"
+version = "0.3.0"
 description = "MCP server for Ignition SCADA — AI-powered project understanding for tags, views, scripts, and UDTs"
 readme = "README.md"
 license = "MIT"
