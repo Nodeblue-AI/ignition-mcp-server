@@ -1,0 +1,14 @@
+{
+  "root": {
+    "type": "ia.container.flex",
+    "meta": {"name": "root"},
+    "props": {"direction": "column"},
+    "children": [
+      {
+        "type": "ia.display.label",
+        "meta": {"name": "motorName"},
+        "props": {"text": "Motor Detail"}
+      }
+    ]
+  }
+}

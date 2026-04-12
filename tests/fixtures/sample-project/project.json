@@ -1,0 +1,7 @@
+{
+  "title": "Sample Project",
+  "description": "Synthetic test project for ignition-mcp-server development",
+  "parent": "",
+  "enabled": true,
+  "inheritable": false
+}

@@ -1,0 +1,49 @@
+{
+  "root": {
+    "type": "ia.container.flex",
+    "meta": {"name": "root"},
+    "props": {"direction": "column", "style": {"padding": "10px"}},
+    "children": [
+      {
+        "type": "ia.display.label",
+        "meta": {"name": "titleLabel"},
+        "props": {"text": "Conveyor Overview", "style": {"fontSize": "24px"}},
+        "propConfig": {
+          "props": {
+            "text": {
+              "binding": {
+                "type": "property",
+                "config": {"path": "view.params.title"}
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "ia.display.led-display",
+        "meta": {"name": "speedDisplay"},
+        "props": {"value": 0},
+        "propConfig": {
+          "props": {
+            "value": {
+              "binding": {
+                "type": "tag",
+                "config": {"tagPath": "[default]Conveyors/Line1/Speed"}
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "ia.input.button",
+        "meta": {"name": "startButton"},
+        "props": {"text": "Start"},
+        "events": {
+          "dom": [
+            {"type": "onClick", "config": {"script": "system.tag.writeBlocking(['[default]Conveyors/Line1/Running'], [True])"}}
+          ]
+        }
+      }
+    ]
+  }
+}

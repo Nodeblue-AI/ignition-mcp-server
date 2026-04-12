@@ -1,0 +1,126 @@
+{
+  "tags": [
+    {
+      "name": "Conveyors",
+      "tagType": "Folder",
+      "tags": [
+        {
+          "name": "Line1",
+          "tagType": "Folder",
+          "tags": [
+            {
+              "name": "Running",
+              "tagType": "AtomicTag",
+              "dataType": "Boolean",
+              "valueSource": "opc",
+              "value": false,
+              "documentation": "True when conveyor line 1 is running"
+            },
+            {
+              "name": "Speed",
+              "tagType": "AtomicTag",
+              "dataType": "Float4",
+              "valueSource": "opc",
+              "value": 0.0,
+              "documentation": "Current speed in ft/min"
+            },
+            {
+              "name": "Faulted",
+              "tagType": "AtomicTag",
+              "dataType": "Boolean",
+              "valueSource": "opc",
+              "value": false
+            }
+          ]
+        },
+        {
+          "name": "Line2_Motor",
+          "tagType": "UdtInstance",
+          "typeId": "Motor_UDT",
+          "tags": [
+            {
+              "name": "Running",
+              "tagType": "AtomicTag",
+              "dataType": "Boolean",
+              "value": false
+            },
+            {
+              "name": "Faulted",
+              "tagType": "AtomicTag",
+              "dataType": "Boolean",
+              "value": false
+            },
+            {
+              "name": "Speed_RPM",
+              "tagType": "AtomicTag",
+              "dataType": "Float4",
+              "value": 0.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Motor_UDT",
+      "tagType": "UdtType",
+      "documentation": "Standard motor control UDT with run/fault status and speed feedback",
+      "parameters": {
+        "MotorName": {"dataType": "String", "value": ""}
+      },
+      "tags": [
+        {
+          "name": "Running",
+          "tagType": "AtomicTag",
+          "dataType": "Boolean",
+          "value": false,
+          "documentation": "Motor running status"
+        },
+        {
+          "name": "Faulted",
+          "tagType": "AtomicTag",
+          "dataType": "Boolean",
+          "value": false,
+          "documentation": "Motor fault status"
+        },
+        {
+          "name": "Speed_RPM",
+          "tagType": "AtomicTag",
+          "dataType": "Float4",
+          "value": 0.0,
+          "documentation": "Motor speed in RPM"
+        }
+      ]
+    },
+    {
+      "name": "Valve_UDT",
+      "tagType": "UdtType",
+      "tags": [
+        {
+          "name": "Open",
+          "tagType": "AtomicTag",
+          "dataType": "Boolean",
+          "value": false
+        },
+        {
+          "name": "Closed",
+          "tagType": "AtomicTag",
+          "dataType": "Boolean",
+          "value": true
+        },
+        {
+          "name": "FaultCode",
+          "tagType": "AtomicTag",
+          "dataType": "Int4",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "SystemClock",
+      "tagType": "AtomicTag",
+      "dataType": "DateTime",
+      "valueSource": "expr",
+      "value": "2026-01-01T00:00:00Z"
+    }
+  ]
+}

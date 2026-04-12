@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ignition-mcp-server"
+version = "0.1.0"
+description = "MCP server for Ignition SCADA — AI-powered project understanding for tags, views, scripts, and UDTs"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [{ name = "Nodeblue", email = "hello@nodeblue.ai" }]
+keywords = ["ignition", "scada", "mcp", "plc", "industrial-automation"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = ["fastmcp==3.2.3"]
+
+[project.scripts]
+ignition-mcp-server = "ignition_mcp_server.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ignition_mcp_server"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
