@@ -1,6 +1,6 @@
 # ignition-mcp-server
 
-> The first AI-powered development tool for Ignition SCADA — an MCP server that lets any AI agent read and understand your Ignition projects.
+> The first AI-powered development tool for Ignition SCADA — an MCP server that lets any AI agent read, understand, and interact with your Ignition projects and gateways.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
@@ -88,6 +88,19 @@ Add to your `~/.kiro/settings.json`:
     "ignition": {
       "command": "ignition-mcp-server",
       "args": []
+    }
+  }
+}
+```
+
+With live gateway access:
+
+```json
+{
+  "mcpServers": {
+    "ignition": {
+      "command": "ignition-mcp-server",
+      "args": ["--gateway-url", "https://my-gateway:8088"]
     }
   }
 }
@@ -310,8 +323,8 @@ See the [Ignition WebDev docs](https://docs.inductiveautomation.com/docs/8.1/app
 ## Roadmap
 
 ### v0.2 — Alarms & Named Queries ✅
-- [x] `get_alarms(project_path)` — parse alarm pipeline configurations
-- [x] `get_named_queries(project_path)` — parse SQL named queries with parameters
+- [x] `list_alarms` / `get_alarm` — parse alarm pipeline configurations
+- [x] `list_named_queries` / `get_named_query` — parse SQL named queries with parameters
 
 ### v0.3 — Live Gateway Interaction ✅
 - [x] `read_tag(tag_path)` / `write_tag(tag_path, value)` — live tag interaction via Ignition WebDev module
@@ -346,20 +359,24 @@ pytest tests/ -v
 ```
 src/ignition_mcp_server/
 ├── __init__.py
-├── __main__.py          # CLI entry point (stdio/SSE)
-├── server.py            # FastMCP server with all tool definitions
-├── project_source.py    # Read from .zip or directory
+├── __main__.py          # CLI entry point (stdio/SSE, gateway config)
+├── server.py            # FastMCP server with all 17 tool definitions
+├── project_source.py    # Read from .zip or directory (LRU-cached)
+├── gateway_client.py    # HTTP client for live Ignition WebDev API
 └── parsers/
-    ├── tags.py          # Tag hierarchy parser
+    ├── tags.py          # Tag hierarchy parser (multi-provider)
     ├── views.py         # Perspective view parser
     ├── scripts.py       # Script discovery and reader
-    └── udts.py          # UDT definition parser
+    ├── udts.py          # UDT definition parser
+    ├── alarms.py        # Alarm pipeline parser
+    └── named_queries.py # Named query parser
 
 tests/
-├── test_server.py       # 31 tests covering all tools + both source types
+├── test_server.py       # 71 tests — parsers, project sources, error handling
+├── test_gateway.py      # 13 tests — live gateway tools with mock HTTP server
 └── fixtures/
     ├── sample-project/  # Synthetic Ignition project (directory)
-    └── sample-project.zip  # Same project as .zip
+    └── sample-project.zip
 ```
 
 ---

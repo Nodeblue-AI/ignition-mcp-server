@@ -5,11 +5,11 @@ build-backend = "hatchling.build"
 [project]
 name = "ignition-mcp-server"
 version = "0.3.1"
-description = "MCP server for Ignition SCADA — AI-powered project understanding for tags, views, scripts, and UDTs"
+description = "MCP server for Ignition SCADA — read project resources, query live gateways, and give AI agents structured access to tags, views, scripts, UDTs, alarms, and named queries"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
-authors = [{ name = "Nodeblue", email = "hello@nodeblue.ai" }]
+authors = [{ name = "Nodeblue", email = "contact@nodeblue.ai" }]
 keywords = ["ignition", "scada", "mcp", "plc", "industrial-automation"]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -19,6 +19,12 @@ classifiers = [
     "Topic :: Scientific/Engineering",
 ]
 dependencies = ["fastmcp==3.2.3"]
+
+[project.urls]
+Homepage = "https://github.com/nodeblue-ai/ignition-mcp-server"
+Repository = "https://github.com/nodeblue-ai/ignition-mcp-server"
+Issues = "https://github.com/nodeblue-ai/ignition-mcp-server/issues"
+Changelog = "https://github.com/nodeblue-ai/ignition-mcp-server/blob/main/CHANGELOG.md"
 
 [project.scripts]
 ignition-mcp-server = "ignition_mcp_server.__main__:main"
