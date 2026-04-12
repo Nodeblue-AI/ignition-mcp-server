@@ -332,7 +332,7 @@ See the [Ignition WebDev docs](https://docs.inductiveautomation.com/docs/8.1/app
 - [x] `get_history(tag_path, start, end)` — query tag history
 
 ### v0.4 — Cross-Platform Intelligence ✅
-- [x] Cross-reference Ignition tags with Studio 5000 L5X PLC logic via [project-automate-bridge](https://github.com/nodeblue-ai/project-automate-bridge)
+- [x] Cross-reference Ignition tags with Studio 5000 L5X PLC logic via [bridge-mcp-server](https://github.com/nodeblue-ai/bridge-mcp-server)
 - [x] "This alarm fires when tag X goes true — here's the PLC logic that drives X"
 - [x] OPC item path extraction (`opcItemPath`, `opcServer`) in tag summaries
 
