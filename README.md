@@ -36,11 +36,7 @@ Part of [Project Automate](https://github.com/nodeblue-ai/project-automate) by [
 
 ## Installation
 
-```bash
-pip install ignition-mcp-server
-```
-
-Or install from source:
+Install from source:
 
 ```bash
 git clone https://github.com/nodeblue-ai/ignition-mcp-server.git
@@ -49,6 +45,8 @@ pip install .
 ```
 
 Requires Python 3.10+.
+
+> **Note:** `pip install ignition-mcp-server` from PyPI is coming soon. For now, install from source as shown above.
 
 ---
 
@@ -372,7 +370,7 @@ src/ignition_mcp_server/
     └── named_queries.py # Named query parser
 
 tests/
-├── test_server.py       # 71 tests — parsers, project sources, error handling
+├── test_server.py       # 59 tests — parsers, project sources, error handling
 ├── test_gateway.py      # 13 tests — live gateway tools with mock HTTP server
 └── fixtures/
     ├── sample-project/  # Synthetic Ignition project (directory)
