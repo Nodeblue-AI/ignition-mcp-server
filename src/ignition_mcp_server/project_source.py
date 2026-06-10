@@ -43,7 +43,9 @@ class DirectoryProjectSource(ProjectSource):
         results: list[str] = []
         for rj in base.rglob("resource.json"):
             rel = rj.parent.relative_to(base)
-            results.append(str(rel) if str(rel) != "." else "")
+            # Emit forward slashes regardless of OS so directory-mode paths match
+            # the .zip source and stay portable (str(Path) uses "\" on Windows).
+            results.append(rel.as_posix() if str(rel) != "." else "")
         return sorted(results)
 
     def read_resource(self, resource_path: str) -> bytes:

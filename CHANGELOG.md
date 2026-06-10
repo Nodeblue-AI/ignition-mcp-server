@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+- **Windows path-separator portability** — `DirectoryProjectSource.list_resources` emitted
+  OS-native separators via `str(Path)`, producing backslash paths (e.g. `Screens\MotorDetail`)
+  on Windows. This diverged from the `.zip` source and broke `list_views` (and any
+  directory-mode resource path) cross-platform. Now uses `Path.as_posix()` so paths are
+  forward-slash on every OS. Fixes 3 failing tests on Windows (now 72/72).
+
 ## [0.4.0] - 2026-04-12
 
 ### Added
