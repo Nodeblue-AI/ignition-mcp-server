@@ -30,7 +30,7 @@ Ignition has ~300,000+ installations worldwide and **zero AI tooling** — no ve
 
 This server fills that gap. It's open-source, agent-agnostic, and works offline.
 
-Part of [Project Automate](https://github.com/nodeblue-ai/project-automate) by [Nodeblue](https://www.nodeblue.ai).
+Part of [Project Automate](https://github.com/md-automation/project-automate) by [Nodeblue](https://www.nodeblue.ai).
 
 ---
 
