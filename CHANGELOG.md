@@ -1,6 +1,24 @@
 # Changelog
 
-## [Unreleased]
+## [0.5.0] - 2026-08-13
+
+### Changed
+- **⚠️ Live writes are now opt-in (breaking)** — `write_tag` and `execute_script` are
+  disabled by default and require the new `--enable-writes` CLI flag in addition to
+  `--gateway-url`. Writing to a running SCADA gateway can actuate real equipment;
+  an AI agent should not have that capability unless a human explicitly grants it.
+  Read tools (`read_tag`, `get_history`) are unaffected. To restore the previous
+  behavior, start the server with `--enable-writes`.
+- Roadmap restructured: platform capabilities (RAG, script generation, view
+  scaffolding, local LLM) ship in [Nexus](https://www.nodeblue.ai/nexus), not in
+  this connector. The connector stays focused on project comprehension and gateway
+  connectivity.
+
+### Added
+- `--enable-writes` CLI flag with safety warning in help text.
+- 5 new write-gating tests (77 total).
+- GitHub issue templates (bug report, feature request) with routing for
+  platform-scale requests.
 
 ### Fixed
 - **Windows path-separator portability** — `DirectoryProjectSource.list_resources` emitted

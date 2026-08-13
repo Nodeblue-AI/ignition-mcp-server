@@ -14,11 +14,28 @@ from ignition_mcp_server.project_source import open_project
 # Set by CLI when --gateway-url is provided
 _gateway: GatewayClient | None = None
 
+# Set by CLI when --enable-writes is provided. Live write tools (write_tag,
+# execute_script) are DISABLED by default — writing to a running SCADA gateway
+# can actuate real equipment. Read tools (read_tag, get_history) are always
+# available once a gateway is configured.
+_writes_enabled: bool = False
 
-def configure_gateway(url: str, username: str = "", password: str = "") -> None:
-    """Configure the live gateway connection."""
-    global _gateway
+
+def configure_gateway(
+    url: str, username: str = "", password: str = "", enable_writes: bool = False
+) -> None:
+    """Configure the live gateway connection.
+
+    Args:
+        url: Gateway base URL.
+        username: Optional gateway auth username.
+        password: Optional gateway auth password.
+        enable_writes: Enable live write tools (write_tag, execute_script).
+            Default False — writes are opt-in for safety.
+    """
+    global _gateway, _writes_enabled
     _gateway = GatewayClient(url, username, password)
+    _writes_enabled = enable_writes
 
 
 def _require_gateway() -> GatewayClient:
@@ -27,6 +44,15 @@ def _require_gateway() -> GatewayClient:
             "No gateway configured. Start the server with --gateway-url to enable live tools."
         )
     return _gateway
+
+
+def _require_writes() -> None:
+    if not _writes_enabled:
+        raise RuntimeError(
+            "Live writes are disabled. This tool can change values on a running "
+            "SCADA system and actuate real equipment. Start the server with "
+            "--enable-writes to opt in (and make sure you understand the risk)."
+        )
 
 
 def _error(msg: str) -> str:
@@ -39,8 +65,9 @@ mcp = FastMCP(
         "This server provides access to Ignition SCADA projects and gateways. "
         "Use project tools to explore tags, views, scripts, UDTs, alarms, and named queries "
         "from project files (provide project_path). "
-        "Use live tools (read_tag, write_tag, execute_script, get_history) to interact "
-        "with a running Ignition gateway (requires --gateway-url at startup)."
+        "Use live tools (read_tag, get_history) to read from a running Ignition "
+        "gateway (requires --gateway-url at startup). Live write tools (write_tag, "
+        "execute_script) additionally require --enable-writes and are disabled by default."
     ),
 )
 
@@ -285,8 +312,9 @@ def read_tag(tag_path: str) -> str:
 def write_tag(tag_path: str, value: str) -> str:
     """Write a value to a tag on a live Ignition gateway.
 
-    Requires the server to be started with --gateway-url. The value is sent as-is;
-    the gateway handles type coercion.
+    DISABLED by default — requires the server to be started with --gateway-url
+    AND --enable-writes. Writing to a live gateway can actuate real equipment.
+    The value is sent as-is; the gateway handles type coercion.
 
     Args:
         tag_path: Full tag path (e.g. "[default]Conveyors/Line1/Speed").
@@ -294,6 +322,7 @@ def write_tag(tag_path: str, value: str) -> str:
     """
     try:
         gw = _require_gateway()
+        _require_writes()
         # Attempt numeric coercion for common cases
         coerced: Any = value
         if value.lower() in ("true", "false"):
@@ -318,14 +347,16 @@ def write_tag(tag_path: str, value: str) -> str:
 def execute_script(code: str) -> str:
     """Execute a Python script on the Ignition gateway and return the result.
 
-    Requires the server to be started with --gateway-url. The script runs in
-    gateway scope with access to system.* functions.
+    DISABLED by default — requires the server to be started with --gateway-url
+    AND --enable-writes. Scripts run in gateway scope with access to system.*
+    functions and can change gateway state or actuate equipment.
 
     Args:
         code: Python code to execute on the gateway.
     """
     try:
         gw = _require_gateway()
+        _require_writes()
         result = gw.execute_script(code)
         return json.dumps(result, indent=2)
     except RuntimeError as e:

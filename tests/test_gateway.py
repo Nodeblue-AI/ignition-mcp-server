@@ -126,18 +126,21 @@ class TestLiveTools:
     def test_write_tag_tool(self, mock_gateway):
         from ignition_mcp_server import server
         server._gateway = GatewayClient(mock_gateway)
+        server._writes_enabled = True
         result = json.loads(server.write_tag("[default]Conveyors/Line1/Speed", "1800"))
         assert result["written"] is True
 
     def test_write_tag_bool_coercion(self, mock_gateway):
         from ignition_mcp_server import server
         server._gateway = GatewayClient(mock_gateway)
+        server._writes_enabled = True
         result = json.loads(server.write_tag("[default]Conveyors/Line1/Running", "true"))
         assert result["written"] is True
 
     def test_execute_script_tool(self, mock_gateway):
         from ignition_mcp_server import server
         server._gateway = GatewayClient(mock_gateway)
+        server._writes_enabled = True
         result = json.loads(server.execute_script("x = 1 + 1"))
         assert "result" in result
 
@@ -163,3 +166,49 @@ class TestLiveTools:
         configure_gateway(mock_gateway)
         gw = _require_gateway()
         assert gw.base_url == mock_gateway
+
+
+# ── Write gating (--enable-writes) ─────────────────────────
+
+
+class TestWriteGating:
+    def test_writes_disabled_by_default(self, mock_gateway):
+        from ignition_mcp_server import server
+        server.configure_gateway(mock_gateway)  # no enable_writes
+        result = json.loads(server.write_tag("[default]Conveyors/Line1/Speed", "1800"))
+        assert "error" in result
+        assert "--enable-writes" in result["error"]
+
+    def test_execute_script_disabled_by_default(self, mock_gateway):
+        from ignition_mcp_server import server
+        server.configure_gateway(mock_gateway)
+        result = json.loads(server.execute_script("x = 1"))
+        assert "error" in result
+        assert "--enable-writes" in result["error"]
+
+    def test_reads_still_work_when_writes_disabled(self, mock_gateway):
+        from ignition_mcp_server import server
+        server.configure_gateway(mock_gateway)
+        result = json.loads(server.read_tag("[default]Conveyors/Line1/Speed"))
+        assert result[0]["value"] == 1750.5
+        history = json.loads(server.get_history(
+            "[default]Conveyors/Line1/Speed",
+            "2026-04-12T00:00:00Z",
+            "2026-04-12T12:00:00Z",
+        ))
+        assert len(history["data"]) == 2
+
+    def test_writes_work_when_enabled(self, mock_gateway):
+        from ignition_mcp_server import server
+        server.configure_gateway(mock_gateway, enable_writes=True)
+        result = json.loads(server.write_tag("[default]Conveyors/Line1/Speed", "1800"))
+        assert result["written"] is True
+        script = json.loads(server.execute_script("x = 1 + 1"))
+        assert "result" in script
+
+    def test_configure_gateway_resets_write_state(self, mock_gateway):
+        from ignition_mcp_server import server
+        server.configure_gateway(mock_gateway, enable_writes=True)
+        server.configure_gateway(mock_gateway)  # reconfigure without writes
+        result = json.loads(server.write_tag("[default]Conveyors/Line1/Speed", "1800"))
+        assert "error" in result

@@ -19,12 +19,25 @@ def main() -> None:
     )
     parser.add_argument("--gateway-username", default="", help="Gateway auth username")
     parser.add_argument("--gateway-password", default="", help="Gateway auth password")
+    parser.add_argument(
+        "--enable-writes",
+        action="store_true",
+        help=(
+            "Enable live write tools (write_tag, execute_script) against the gateway. "
+            "Disabled by default — writes can actuate real equipment."
+        ),
+    )
     args = parser.parse_args()
 
     from ignition_mcp_server.server import configure_gateway, mcp
 
     if args.gateway_url:
-        configure_gateway(args.gateway_url, args.gateway_username, args.gateway_password)
+        configure_gateway(
+            args.gateway_url,
+            args.gateway_username,
+            args.gateway_password,
+            enable_writes=args.enable_writes,
+        )
 
     if args.transport == "sse":
         mcp.run(transport="sse", host=args.host, port=args.port)

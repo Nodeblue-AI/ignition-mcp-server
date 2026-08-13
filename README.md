@@ -31,8 +31,8 @@
 - **UDTs** — list and inspect User Defined Type definitions with member details
 - **Alarm Pipelines** — read alarm notification configurations with stages, profiles, and transitions
 - **Named Queries** — read SQL query definitions with parameters, database targets, and types
-- **Live Tag Read/Write** — read and write tag values on a running Ignition gateway via WebDev
-- **Script Execution** — run Python scripts on the gateway in gateway scope
+- **Live Tag Read/Write** — read tag values on a running Ignition gateway via WebDev; writes are opt-in (`--enable-writes`)
+- **Script Execution** — run Python scripts on the gateway in gateway scope (opt-in, `--enable-writes`)
 - **Tag History** — query historical tag data with time range filtering
 
 Works with both **Ignition 8.1+ project exports** (`.zip` files) and **8.3+ filesystem-based projects** (direct directory access).
@@ -83,7 +83,16 @@ ignition-mcp-server --transport sse --port 8080
 ignition-mcp-server --gateway-url https://my-gateway:8088 --gateway-username admin --gateway-password changeme
 ```
 
-This enables the `read_tag`, `write_tag`, `execute_script`, and `get_history` tools. Requires the [WebDev module](https://docs.inductiveautomation.com/docs/8.1/appendix/modules/web-dev-module) on the gateway with API endpoints configured (see [Gateway Setup](#gateway-setup) below).
+This enables the read-only live tools: `read_tag` and `get_history`. Requires the [WebDev module](https://docs.inductiveautomation.com/docs/8.1/appendix/modules/web-dev-module) on the gateway with API endpoints configured (see [Gateway Setup](#gateway-setup) below).
+
+> [!WARNING]
+> **Live writes are disabled by default.** `write_tag` and `execute_script` can change values on a running SCADA system and actuate real equipment. To enable them, you must explicitly opt in with `--enable-writes`:
+>
+> ```bash
+> ignition-mcp-server --gateway-url https://my-gateway:8088 --enable-writes
+> ```
+>
+> Only do this against non-production gateways, or when you fully understand what the connected AI agent is allowed to touch. Gated, audited, human-approved live writes are part of [Nexus](https://www.nodeblue.ai/nexus).
 
 ---
 
@@ -235,7 +244,7 @@ Write a value to a tag on a live gateway. Handles boolean/numeric coercion autom
 write_tag("[default]Conveyors/Line1/Speed", "1800")
 ```
 
-Requires `--gateway-url` at startup.
+**Disabled by default.** Requires `--gateway-url` **and** `--enable-writes` at startup.
 
 ### `execute_script(code)`
 Execute a Python script on the Ignition gateway in gateway scope.
@@ -244,7 +253,7 @@ Execute a Python script on the Ignition gateway in gateway scope.
 execute_script("system.tag.readBlocking(['[default]Conveyors/Line1/Speed'])")
 ```
 
-Requires `--gateway-url` at startup.
+**Disabled by default.** Requires `--gateway-url` **and** `--enable-writes` at startup.
 
 ### `get_history(tag_path, start, end)`
 Query historical tag data from the gateway's historian.
@@ -347,11 +356,37 @@ See the [Ignition WebDev docs](https://docs.inductiveautomation.com/docs/8.1/app
 - [x] "This alarm fires when tag X goes true — here's the PLC logic that drives X"
 - [x] OPC item path extraction (`opcItemPath`, `opcServer`) in tag summaries
 
-### Future
-- [ ] RAG pipeline over Ignition documentation + project corpus
-- [ ] Ignition script generation (gateway timer scripts, Perspective bindings)
-- [ ] Perspective view scaffolding from natural language descriptions
-- [ ] Local LLM support for air-gapped deployments
+### v0.5 — Write Safety Gate ✅
+- [x] `write_tag` / `execute_script` disabled by default — opt in with `--enable-writes`
+- [x] Safety warnings in tool descriptions and CLI help
+
+### Maintenance
+- [ ] PyPI publication (`pip install ignition-mcp-server`)
+- [ ] New Ignition version format support as releases come out
+- [ ] Bug fixes and edge cases from real project exports — [issues welcome](https://github.com/Nodeblue-AI/ignition-mcp-server/issues)
+
+This connector is feature-complete for its scope: **single-project comprehension plus gateway connectivity**. Development beyond that scope happens in Nexus.
+
+---
+
+## This Connector vs. Nexus
+
+The connector is the access layer. [Nexus](https://www.nodeblue.ai/nexus) is the intelligence that sits on top of it — and of every other connector — as one system.
+
+| Capability | This connector | Nexus |
+|---|:---:|:---:|
+| Parse Ignition projects (tags, views, scripts, UDTs, alarms, queries) | ✅ | ✅ |
+| Live gateway read / history | ✅ | ✅ |
+| Live writes | ⚠️ opt-in flag, unaudited | ✅ gated, audited, human-approved |
+| Cross-vendor: Rockwell, Siemens, CODESYS family (500+ brands), OPC UA | — | ✅ |
+| Live fault diagnosis on the running line (root-cause, cited) | — | ✅ |
+| Knowledge layer: your manuals, SFS/DOO docs, fault history — searchable, linked to logic | — | ✅ |
+| Persistent memory of the operation across sessions | — | ✅ |
+| Script generation, view scaffolding, code generation | — | ✅ |
+| Fleet scale: auto-discovery, whole-plant inventory, monitoring, alarming | — | ✅ |
+| Local LLM / air-gapped deployment | — | ✅ |
+
+If you're evaluating this connector for anything beyond a single project on a single gateway, [talk to us about Nexus](https://www.nodeblue.ai/nexus).
 
 ---
 
@@ -384,7 +419,7 @@ src/ignition_mcp_server/
 
 tests/
 ├── test_server.py       # 59 tests — parsers, project sources, error handling
-├── test_gateway.py      # 13 tests — live gateway tools with mock HTTP server
+├── test_gateway.py      # 18 tests — live gateway tools + write gating with mock HTTP server
 └── fixtures/
     ├── sample-project/  # Synthetic Ignition project (directory)
     └── sample-project.zip
