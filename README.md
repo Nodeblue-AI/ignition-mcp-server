@@ -49,17 +49,19 @@ Built and maintained by [Nodeblue](https://www.nodeblue.ai). These connectors ar
 
 ## Installation
 
-Install from source:
+```bash
+pip install ignition-mcp-server
+```
+
+Requires Python 3.10+.
+
+To install from source instead:
 
 ```bash
 git clone https://github.com/nodeblue-ai/ignition-mcp-server.git
 cd ignition-mcp-server
 pip install .
 ```
-
-Requires Python 3.10+.
-
-> **Note:** `pip install ignition-mcp-server` from PyPI is coming soon. For now, install from source as shown above.
 
 ---
 
@@ -361,7 +363,7 @@ See the [Ignition WebDev docs](https://docs.inductiveautomation.com/docs/8.1/app
 - [x] Safety warnings in tool descriptions and CLI help
 
 ### Maintenance
-- [ ] PyPI publication (`pip install ignition-mcp-server`)
+- [x] PyPI publication (`pip install ignition-mcp-server`)
 - [ ] New Ignition version format support as releases come out
 - [ ] Bug fixes and edge cases from real project exports — [issues welcome](https://github.com/Nodeblue-AI/ignition-mcp-server/issues)
 
