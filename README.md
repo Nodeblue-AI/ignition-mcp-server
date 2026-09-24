@@ -2,6 +2,7 @@
 
 > The first AI-powered development tool for Ignition SCADA — an MCP server that lets any AI agent read, understand, and interact with your Ignition projects and gateways.
 
+[![PyPI](https://img.shields.io/pypi/v/ignition-mcp-server.svg)](https://pypi.org/project/ignition-mcp-server/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![MCP](https://img.shields.io/badge/protocol-MCP-green.svg)](https://modelcontextprotocol.io/)
